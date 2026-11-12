@@ -163,7 +163,12 @@ func repl(ctx context.Context, c *client, o options, in *os.File, out, stderr io
 			continue
 		}
 		if o.Format == "json" || o.TranslateCode {
-			err := translateInput(ctx, c, line, o, out)
+			var err error
+			if o.Format == "json" {
+				err = translateJSON(ctx, c, line, o, out)
+			} else {
+				history, err = translateDocWithHistory(ctx, c, line, o, out, history)
+			}
 			if err != nil {
 				if ctx.Err() != nil {
 					return ctx.Err()
