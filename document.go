@@ -8,7 +8,7 @@ import (
 
 func translateDoc(ctx context.Context, c *client, text string, o options, out io.Writer) error {
 	var history []pair
-	for _, s := range splitDocument(text, 2000) {
+	for _, s := range splitDocument(text, 2000, o.TranslateCode) {
 		if s.Translatable && strings.TrimSpace(s.Text) != "" {
 			tr, err := c.stream(ctx, s.Text, trimHistory(history), o, out)
 			if err != nil {

@@ -25,6 +25,8 @@ type options struct {
 	Target, Source, Form, Context string
 	Glossary                      []glossaryEntry
 	MaxTokens                     int
+	TranslateCode                 bool
+	Format                        string
 }
 
 func normLang(s string) string {

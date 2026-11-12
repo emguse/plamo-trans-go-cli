@@ -13,10 +13,11 @@ type segment struct {
 }
 
 // splitDocument preserves all source separators and fenced code, including EOF newlines.
-func splitDocument(text string, maxChars int) []segment {
+func splitDocument(text string, maxChars int, translateCode ...bool) []segment {
 	var segs []segment
 	var buf strings.Builder
 	inCode := false
+	includeCode := len(translateCode) > 0 && translateCode[0]
 	flush := func(tr bool) {
 		if buf.Len() == 0 {
 			return
@@ -36,7 +37,11 @@ func splitDocument(text string, maxChars int) []segment {
 		}
 		line := strings.TrimSuffix(raw, "\n")
 		if strings.HasPrefix(strings.TrimLeftFunc(line, unicode.IsSpace), "```") {
-			if !inCode {
+			if includeCode {
+				flush(true)
+				segs = append(segs, segment{Text: line, Separator: strings.TrimPrefix(raw, line)})
+				inCode = !inCode
+			} else if !inCode {
 				flush(true)
 				inCode = true
 				buf.WriteString(raw)
@@ -57,7 +62,7 @@ func splitDocument(text string, maxChars int) []segment {
 			buf.WriteString(raw)
 		}
 	}
-	flush(!inCode)
+	flush(!inCode || includeCode)
 	// Reserved-token examples in inline code must never enter the model prompt.
 	// Keep them verbatim, just as fenced code, before applying chunk limits.
 	var protected []segment

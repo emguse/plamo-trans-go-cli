@@ -37,6 +37,8 @@ func parseArgs(args []string, stderr io.Writer) (arguments, error) {
 	for _, n := range []string{"s", "source"} {
 		fs.StringVar(&a.opt.Source, n, "", "source language (requires --target)")
 	}
+	fs.BoolVar(&a.opt.TranslateCode, "translate-code", false, "translate fenced code contents in documents")
+	fs.StringVar(&a.opt.Format, "format", "text", "input format: text or json (translate string values)")
 	fs.StringVar(&a.opt.Form, "form", "", "Japanese style: polite or plain (requires -t ja)")
 	fs.Var(&a.glossary, "glossary", "repeatable FILE or 'source=>target'")
 	fs.StringVar(&a.opt.Context, "context", "", "reference text or file path")
@@ -116,6 +118,9 @@ func parseArgs(args []string, stderr io.Writer) (arguments, error) {
 	}
 	if err := fs.Parse(flags); err != nil {
 		return a, err
+	}
+	if a.opt.Format != "text" && a.opt.Format != "json" {
+		return a, fmt.Errorf("--format must be text or json")
 	}
 	a.text = text
 	definition, err := lookupModel(a.size)
