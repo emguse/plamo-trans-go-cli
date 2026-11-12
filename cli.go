@@ -70,10 +70,14 @@ func run(ctx context.Context, args []string, in *os.File, stdout, stderr *os.Fil
 	if !a.interactive && strings.TrimSpace(src) == "" {
 		return 0
 	}
-	docMode := a.file != "" || len(a.text) == 0 && strings.Contains(strings.TrimSpace(src), "\n")
+	docMode := a.opt.TranslateCode || a.file != "" || len(a.text) == 0 && strings.Contains(strings.TrimSpace(src), "\n")
 	if !a.interactive {
-		if docMode {
-			for _, s := range splitDocument(src, 2000) {
+		if a.opt.Format == "json" {
+			if _, err := jsonValues(src); err != nil {
+				return fail(err)
+			}
+		} else if docMode {
+			for _, s := range splitDocument(src, 2000, a.opt.TranslateCode) {
 				if s.Translatable {
 					if err := checkText(s.Text, "input", maxRequestChars); err != nil {
 						return fail(err)
@@ -121,13 +125,18 @@ func run(ctx context.Context, args []string, in *os.File, stdout, stderr *os.Fil
 			if e != nil {
 				return fail(e)
 			}
-			err = translateDoc(ctx, c, src, a.opt, f)
+			err = translateInput(ctx, c, src, a.opt, f)
 			e = f.Close()
 			if err == nil {
 				err = e
 			}
 		} else {
-			err = translateDoc(ctx, c, src, a.opt, out)
+			err = translateInput(ctx, c, src, a.opt, out)
+		}
+	case a.opt.Format == "json":
+		err = translateJSON(ctx, c, src, a.opt, out)
+		if err == nil {
+			_, err = fmt.Fprintln(out)
 		}
 	case docMode:
 		err = translateDoc(ctx, c, strings.TrimRight(src, "\n"), a.opt, out)

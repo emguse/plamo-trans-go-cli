@@ -52,6 +52,8 @@ echo "The bank was muddy." | ./plamo-trans -t ja --form polite --context "雨上
 | `--server URL` | Use an existing server |
 | `--llama-bin PATH` | llama executable |
 | `--ctx N` | Server context size. Default 16384 |
+| `--translate-code` | Preserve code fences and translate their contents |
+| `--format text\|json` | Input format (default: `text`); `json` translates string values only |
 | `--max-tokens N` | Output token limit. Default 2048 |
 | `-v`, `--verbose` | Display server logs to standard error |
 
@@ -60,6 +62,16 @@ Arguments are concatenated using whitespace. Options can also be specified after
 The glossary file is in UTF-8 format, with one `source=>destination` pair per line. Empty lines and lines starting with `#` are ignored.
 
 Documents are split into chunks of approximately 2,000 characters. Markdown code fences consisting of three backticks are preserved without translation. Whitespace between paragraphs and trailing newlines are preserved; long paragraphs are split by prioritizing sentence and whitespace boundaries. Translation segments for long paragraphs are joined by whitespace. The four most recent translated pairs, totaling up to 3,000 characters, are used as the history for the next translation.
+
+
+`--translate-code` sends fenced code contents to the model while preserving the fences. It supports files, stdin, positional text, and the REPL. The model may still return code unchanged. Reserved-token validation remains enabled; inline code containing reserved-token examples is still preserved.
+
+`--format json` validates JSON and translates each nonblank string value, including values in nested objects and arrays. Keys, numbers, booleans, null, ordering, structure, and whitespace outside values are preserved. Markdown inside string values is treated as plain text; combining this with `--translate-code` is unnecessary. String escape spelling may change. Long values are split into approximately 2,000-character chunks, and translations are escaped as JSON. Files, stdin, positional text, and the REPL are supported. Values containing reserved tokens are rejected.
+
+```bash
+./plamo-trans --translate-code -f document.md -t en
+./plamo-trans --format json -f messages.json -o messages.en.json -t en
+```
 
 ## Interactive Mode
 

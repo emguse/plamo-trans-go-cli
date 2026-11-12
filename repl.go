@@ -162,6 +162,25 @@ func repl(ctx context.Context, c *client, o options, in *os.File, out, stderr io
 			}
 			continue
 		}
+		if o.Format == "json" || o.TranslateCode {
+			var err error
+			if o.Format == "json" {
+				err = translateJSON(ctx, c, line, o, out)
+			} else {
+				history, err = translateDocWithHistory(ctx, c, line, o, out, history)
+			}
+			if err != nil {
+				if ctx.Err() != nil {
+					return ctx.Err()
+				}
+				fmt.Fprintln(stderr, "error:", err)
+				continue
+			}
+			if _, err := fmt.Fprintln(out); err != nil {
+				return err
+			}
+			continue
+		}
 		tr, err := c.stream(ctx, line, trimHistory(history), o, out)
 		if err != nil {
 			if ctx.Err() != nil {
