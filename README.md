@@ -28,6 +28,7 @@ Git情報を取得できない作業環境でビルドが失敗する場合は�
 ./plamo-trans "会議は来週の月曜日に変更されました。"
 echo "The bank was muddy." | ./plamo-trans -t ja --form polite --context "雨上がりの川辺"
 ./plamo-trans -f doc.md -o doc.en.md -t en --glossary "管理画面=>dashboard"
+./plamo-trans -u https://github.com/OWNER/REPO/blob/main/README.md -o README.en.md -t en
 ./plamo-trans --server http://127.0.0.1:8080 -t en "こんにちは"
 ./plamo-trans --model /path/to/model.gguf -t en "こんにちは"
 ./plamo-trans -i -t en
@@ -43,7 +44,8 @@ echo "The bank was muddy." | ./plamo-trans -t ja --form polite --context "雨上
 | `--glossary FILE\|'a=>b'` | 用語集。繰り返し指定可能 |
 | `--context TEXT\|FILE` | 参考文脈。実在するファイルなら内容を使用 |
 | `-f`, `--file PATH` | 文書を分割してストリーミング翻訳 |
-| `-o`, `--output PATH` | `-f` の出力先。省略時は標準出力 |
+| `-u`, `--url URL` | http(s) URLのテキスト/Markdownを取得して `-f` と同様に翻訳。GitHubの `blob` URLはrawに自動変換。`-f`/`-i`/テキスト引数とは併用不可。HTMLページは非対応（エラー）。取得は30秒でタイムアウト、サイズ上限は `-f` と同じ |
+| `-o`, `--output PATH` | `-f`/`-u` の出力先。省略時は標準出力 |
 | `-i`, `--interactive` | 対話モード |
 | `--size SIZE` | `0.8b`（既定）、`2b`、`8b`、`31b` |
 | `--quant NAME` | `Q4_K_M`（既定）、`Q3_K_M`、`Q2_K`。0.8B・2Bは `Q4_0` にも対応 |
