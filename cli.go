@@ -56,6 +56,8 @@ func run(ctx context.Context, args []string, in *os.File, stdout, stderr *os.Fil
 	case a.interactive:
 	case a.file != "":
 		src, err = readFileLimited(a.file)
+	case a.url != "":
+		src, err = fetchURL(ctx, a.url)
 	case len(a.text) > 0:
 		src = strings.Join(a.text, " ")
 	case !isTerminal(in):
@@ -70,7 +72,7 @@ func run(ctx context.Context, args []string, in *os.File, stdout, stderr *os.Fil
 	if !a.interactive && strings.TrimSpace(src) == "" {
 		return 0
 	}
-	docMode := a.opt.TranslateCode || a.file != "" || len(a.text) == 0 && strings.Contains(strings.TrimSpace(src), "\n")
+	docMode := a.opt.TranslateCode || a.file != "" || a.url != "" || len(a.text) == 0 && strings.Contains(strings.TrimSpace(src), "\n")
 	if !a.interactive {
 		if a.opt.Format == "json" {
 			if _, err := jsonValues(src); err != nil {
@@ -119,7 +121,7 @@ func run(ctx context.Context, args []string, in *os.File, stdout, stderr *os.Fil
 	switch {
 	case a.interactive:
 		err = repl(ctx, c, a.opt, in, out, errs)
-	case a.file != "":
+	case a.file != "" || a.url != "":
 		if a.output != "" {
 			f, e := os.Create(a.output)
 			if e != nil {

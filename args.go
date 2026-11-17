@@ -14,13 +14,13 @@ func (s *stringList) String() string     { return strings.Join(*s, ",") }
 func (s *stringList) Set(v string) error { *s = append(*s, v); return nil }
 
 type arguments struct {
-	definition                                      modelDefinition
-	opt                                             options
-	glossary                                        stringList
-	file, output, size, quant, model, server, llama string
-	interactive, offline, verbose                   bool
-	ctx                                             int
-	text                                            []string
+	definition                                           modelDefinition
+	opt                                                  options
+	glossary                                             stringList
+	url, file, output, size, quant, model, server, llama string
+	interactive, offline, verbose                        bool
+	ctx                                                  int
+	text                                                 []string
 }
 
 func parseArgs(args []string, stderr io.Writer) (arguments, error) {
@@ -45,8 +45,11 @@ func parseArgs(args []string, stderr io.Writer) (arguments, error) {
 	for _, n := range []string{"f", "file"} {
 		fs.StringVar(&a.file, n, "", "text/Markdown file to translate")
 	}
+	for _, n := range []string{"u", "url"} {
+		fs.StringVar(&a.url, n, "", "http(s) URL of a text/Markdown file (GitHub blob URLs supported)")
+	}
 	for _, n := range []string{"o", "output"} {
-		fs.StringVar(&a.output, n, "", "output file for --file")
+		fs.StringVar(&a.output, n, "", "output file for --file/--url")
 	}
 	for _, n := range []string{"i", "interactive"} {
 		fs.BoolVar(&a.interactive, n, false, "REPL mode (blank line to translate)")
@@ -123,6 +126,14 @@ func parseArgs(args []string, stderr io.Writer) (arguments, error) {
 		return a, fmt.Errorf("--format must be text or json")
 	}
 	a.text = text
+	if a.url != "" {
+		if a.file != "" || a.interactive || len(text) > 0 {
+			return a, fmt.Errorf("--url cannot be combined with --file, --interactive or text arguments")
+		}
+		if _, err := parseInputURL(a.url); err != nil {
+			return a, err
+		}
+	}
 	definition, err := lookupModel(a.size)
 	if err != nil {
 		return a, err

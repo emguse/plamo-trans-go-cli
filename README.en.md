@@ -28,6 +28,7 @@ Looks for `llama` / `llama-server` in the PATH and starts them automatically. Yo
 ./plamo-trans "会議は来週の月曜日に変更されました。"
 echo "The bank was muddy." | ./plamo-trans -t ja --form polite --context "雨上がりの川辺"
 ./plamo-trans -f doc.md -o doc.en.md -t en --glossary "管理画面=>dashboard"
+./plamo-trans -u https://github.com/OWNER/REPO/blob/main/README.md -o README.ja.md -t ja
 ./plamo-trans --server http://127.0.0.1:8080 -t en "こんにちは"
 ./plamo-trans --model /path/to/model.gguf -t en "こんにちは"
 ./plamo-trans -i -t en
@@ -43,7 +44,8 @@ echo "The bank was muddy." | ./plamo-trans -t ja --form polite --context "雨上
 | `--glossary FILE\|'a=>b'` | Glossary. Can be specified repeatedly |
 | `--context TEXT\|FILE` | Reference context. Uses content from an existing file |
 | `-f`, `--file PATH` | Split documents for streaming translation |
-| `-o`, `--output PATH` | Output destination for `-f`. Standard output if omitted |
+| `-u`, `--url URL` | Fetch text/Markdown from an http(s) URL and translate it like `-f`. GitHub `blob` URLs are rewritten to raw. Cannot be combined with `-f`, `-i` or text arguments. HTML pages are not supported (error); convert them externally and pipe via stdin. 30 s timeout; same size limit as `-f` |
+| `-o`, `--output PATH` | Output destination for `-f`/`-u`. Standard output if omitted |
 | `-i`, `--interactive` | Interactive mode |
 | `--size SIZE` | `0.8b` (default), `2b`, `8b`, `31b` |
 | `--quant NAME` | `Q4_K_M` (default), `Q3_K_M`, `Q2_K`. 0.8B and 2B also support `Q4_0` |
